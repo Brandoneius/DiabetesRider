@@ -2,19 +2,24 @@ using UnityEngine;
 
 public class CameraFollow : MonoBehaviour
 {
-    public Transform rider; // Drag the Rider here in Inspector
-    public float followSpeed = 5f; // Adjust speed for smooth movement
-    public Vector3 offset = new Vector3(5, 2, -10); // Camera position relative to Rider
+    public Transform rider; // Assign in Inspector
+    public float followSpeed = 0.2f; // Adjust for smoothness
+    public Vector3 offset = new Vector3(5, 2, -10); // Keep -10 Z for proper depth
+
+    private Vector3 velocity = Vector3.zero; // Used for smoothing
 
     void LateUpdate()
     {
         if (rider != null)
         {
-            // Smoothly follow the rider without rotating
-            transform.rotation = Quaternion.Euler(0, 0, 0);
+            // Target position but maintain fixed Z position
+            Vector3 targetPosition = new Vector3(rider.position.x + offset.x, rider.position.y + offset.y, transform.position.z);
 
-            Vector3 targetPosition = new Vector3(rider.position.x + offset.x, rider.position.y + offset.y, offset.z);
-            transform.position = Vector3.Lerp(transform.position, targetPosition, followSpeed * Time.deltaTime);
+            // Smoothly move camera toward target position
+            transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, followSpeed);
+
+            // ✅ Prevent rotation from changing
+            transform.rotation = Quaternion.Euler(0, 0, 0);
         }
     }
 }

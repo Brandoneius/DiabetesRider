@@ -79,6 +79,7 @@ List<Vector2> ReadCSV(string path)
 
 
 public GameObject riderPrefab; // Assign the Rider prefab in Inspector
+public GameObject gummyPrefab; // Assign in Inspector
 
 void DrawTrack(List<Vector2> points)
 {
@@ -97,7 +98,7 @@ void DrawTrack(List<Vector2> points)
 
     Debug.Log("✅ Track successfully drawn!");
 
-    // 🏎 Find highest point near the start 🏎
+    //  Find highest point near the start 
     if (riderPrefab != null && points.Count > 0)
     {
         float spawnX = points[0].x;
@@ -108,14 +109,39 @@ void DrawTrack(List<Vector2> points)
         {
             if (points[i].y > highestY)
             {
-                highestY = points[i].y + 20;
-                spawnX = points[i].x + 20;
+                highestY = points[i].y;
+                spawnX = points[i].x;
             }
+        }
+
+        // 🚨 Fail-safe: Ensure Rider never spawns at X = 0
+        if (spawnX == 0)
+        {
+            spawnX = points[Mathf.Min(range, points.Count - 1)].x; // Pick a further point
+            //highestY = points[Mathf.Min(range, points.Count - 1)].y;
+            Debug.LogWarning($"⚠️ Highest point was at X=0, adjusted spawn to ({spawnX}, {highestY})");
         }
 
         Instantiate(riderPrefab, new Vector3(spawnX, highestY, 0), Quaternion.identity);
         Debug.Log($"🏎 Rider spawned at ({spawnX}, {highestY})");
     }
+
+
+    // 🍬 Spawn Gummies randomly along the track 🍬
+    if (gummyPrefab != null && points.Count > 10)
+    {
+        int gummyCount = Mathf.Max(5, points.Count / 25); // Adjust frequency
+        for (int i = 0; i < gummyCount; i++)
+        {
+            int randomIndex = UnityEngine.Random.Range(5, points.Count - 5); // Avoid edges
+
+            Vector2 gummyPosition = points[randomIndex];
+            
+            // Ensure it spawns a little above the track, not inside it
+            Instantiate(gummyPrefab, new Vector3(gummyPosition.x, gummyPosition.y + 10, 0), Quaternion.identity);
+        }
+    }
+
 
     // 🎯 Add EdgeCollider2D for physics collisions 🎯
     EdgeCollider2D edgeCollider = lineRenderer.gameObject.GetComponent<EdgeCollider2D>();

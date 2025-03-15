@@ -6,11 +6,12 @@ public class RiderController : MonoBehaviour
     public float speed = 5f;
     public float maxSpeed = 20f;
     public float boostAmount = 5f;
+    public float verticalBoostForce = 10f; // 🚀 New vertical boost force
     public int totalBoosts = 3;
     private int remainingBoosts;
     private Rigidbody2D rb;
 
-    public Text boostCounterText; // Assign in Inspector
+    public Text boostCounterText; // UI to show remaining boosts
 
     void Start()
     {
@@ -22,33 +23,38 @@ public class RiderController : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space)) // Standard boost (X direction)
         {
-            UseBoost();
+            UseBoost(Vector2.right * boostAmount);
+        }
+
+        if (Input.GetKeyDown(KeyCode.W)) // Jump boost (Y direction)
+        {
+            UseBoost(Vector2.up * verticalBoostForce);
         }
     }
 
-    public void UseBoost()
+    public void UseBoost(Vector2 boostDirection)
     {
         if (remainingBoosts > 0)
         {
             remainingBoosts--;
-            speed = Mathf.Min(speed + boostAmount, maxSpeed);
-            rb.linearVelocity = new Vector2(speed, rb.linearVelocity.y);
-            Debug.Log($"🚀 Boost Activated! Speed: {speed}, Boosts Left: {remainingBoosts}");
+            rb.linearVelocity += boostDirection; // 🚀 Apply force in chosen direction
             UpdateBoostUI();
         }
-        else
-        {
-            Debug.Log("No boosts left!");
-        }
+    }
+
+    public void AddBoost(int amount)
+    {
+        remainingBoosts += amount;
+        UpdateBoostUI();
     }
 
     void UpdateBoostUI()
     {
         if (boostCounterText != null)
         {
-            boostCounterText.text = $"Gummies: {remainingBoosts}";
+            boostCounterText.text = $"Gummies Left: {remainingBoosts}";
         }
     }
 }
