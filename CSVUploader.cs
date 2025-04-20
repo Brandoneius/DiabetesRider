@@ -24,40 +24,37 @@ public class CSVUploader : MonoBehaviour
         startRideButton.interactable = false;
     }
 
-    public void ChooseFile()
-    {
-        Debug.Log("ChooseFile button clicked!");
+public void ChooseFile()
+{
+    Debug.Log("ChooseFile button clicked!");
 
 #if UNITY_EDITOR
-        filePath = UnityEditor.EditorUtility.OpenFilePanel("Select CSV File", "", "csv");
-#else
-        Debug.LogError("File dialog not available in built game! Use StandaloneFileBrowser.");
+    filePath = UnityEditor.EditorUtility.OpenFilePanel("Select CSV File", "", "csv");
+#elif UNITY_STANDALONE
+    string[] paths = StandaloneFileBrowser.OpenFilePanel("Select CSV File", "", "csv", false);
+    if (paths.Length > 0) filePath = paths[0];
 #endif
 
-        if (!string.IsNullOrEmpty(filePath))
-        {
-            Debug.Log("Selected file: " + filePath);
+    if (!string.IsNullOrEmpty(filePath))
+    {
+        Debug.Log("Selected file: " + filePath);
+        string fileName = Path.GetFileName(filePath);
+        filePathText.text = "Selected: " + fileName;
 
+        // Force UI refresh trick
+        filePathText.enabled = false;
+        filePathText.enabled = true;
 
-            string fileName = Path.GetFileName(filePath);
-            Debug.Log("Extracted File Name: " + fileName);
-
-            filePathText.text = "Selected: " + fileName;
-            //filePathText.text = "Selected: " + Path.GetFileName(filePath);
-            //This is an attempt at refreshing the UI
-            filePathText.enabled = false;
-            filePathText.enabled = true;
-
-
-            startRideButton.interactable = true;
-        }
-        else
-        {
-            Debug.Log("No file selected.");
-            filePathText.text = "No file selected";
-            startRideButton.interactable = false;
-        }
+        startRideButton.interactable = true;
     }
+    else
+    {
+        Debug.Log("No file selected.");
+        filePathText.text = "No file selected";
+        startRideButton.interactable = false;
+    }
+}
+
 
     public void StartRide()
     {
